@@ -398,7 +398,7 @@ export default function CustomerHomePage() {
                       fontSize: "12px",
                     }}
                   />
-                  <Bar dataKey="weight_kg" name="Bao bì (kg)" fill="#16A34A" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="weight_kg" name="Bao bì (kg)" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -444,8 +444,8 @@ export default function CustomerHomePage() {
                     type="monotone"
                     dataKey="earned"
                     name="Điểm tích lũy"
-                    stroke="#16A34A"
-                    fill="#DCFCE7"
+                    stroke="var(--color-primary)"
+                    fill="var(--color-primary-soft)"
                   />
                 </AreaChart>
               </ResponsiveContainer>

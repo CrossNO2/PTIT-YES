@@ -1,11 +1,7 @@
 @import "tailwindcss";
 @import "../styles/design-tokens.css";
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-}
-
+:root { --background: var(--color-background); --foreground: var(--color-text-primary); }
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -13,23 +9,104 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+html { background: var(--color-background); }
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background: var(--color-background);
+  color: var(--color-text-primary);
   font-family: var(--font-inter), Inter, system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 180ms ease, color 180ms ease;
 }
 
+* { scrollbar-color: var(--color-border) transparent; }
+::selection { background: color-mix(in srgb, var(--color-primary) 24%, transparent); }
+
 .field-control {
-  width: 100%;
-  height: 42px;
-  border: 1px solid #cbd5e1;
-  border-radius: 0.625rem;
-  background: #fff;
-  padding: 0 0.75rem;
-  color: #0f172a;
-  font-size: 0.875rem;
-  outline: none;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  width: 100%; height: 42px; border: 1px solid var(--color-border); border-radius: .625rem;
+  background: var(--color-surface-elevated); padding: 0 .75rem; color: var(--color-text-primary);
+  font-size: .875rem; outline: none; transition: border-color 150ms ease, box-shadow 150ms ease, background-color 180ms ease;
 }
-.field-control:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.10); }
+.field-control::placeholder { color: var(--color-text-muted); }
+.field-control:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 16%, transparent); }
+
+.theme-icon-button {
+  width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 10px; border: 1px solid var(--color-border); color: var(--color-text-secondary);
+  background: var(--color-surface-elevated); transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+.theme-icon-button:hover { color: var(--color-primary); border-color: color-mix(in srgb, var(--color-primary) 38%, var(--color-border)); transform: translateY(-1px); }
+.theme-icon-button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+.brand-logo-wrap { display: flex; align-items: center; min-width: 0; }
+.brand-logo-image { height: 46px; width: auto; max-width: 178px; object-fit: contain; object-position: left center; }
+.brand-logo-compact .brand-logo-image { height: 38px; max-width: 148px; }
+[data-theme="dark"] .brand-logo-image { filter: saturate(.88) brightness(1.12); }
+
+/* Semantic compatibility layer for the existing Tailwind-heavy UI. This lets the entire
+   application inherit the design tokens without rewriting business-facing pages. */
+[data-theme="dark"] .bg-white { background-color: var(--color-surface) !important; }
+[data-theme="dark"] .bg-white\/95 { background-color: color-mix(in srgb, var(--color-surface) 95%, transparent) !important; }
+[data-theme="dark"] .bg-white\/90 { background-color: color-mix(in srgb, var(--color-surface) 90%, transparent) !important; }
+[data-theme="dark"] .bg-white\/70 { background-color: color-mix(in srgb, var(--color-surface) 72%, transparent) !important; }
+[data-theme="dark"] .bg-slate-50 { background-color: var(--color-surface-muted) !important; }
+[data-theme="dark"] .bg-slate-100 { background-color: var(--color-surface-elevated) !important; }
+[data-theme="dark"] .bg-slate-200 { background-color: var(--color-border) !important; }
+[data-theme="dark"] .border-slate-100,
+[data-theme="dark"] .border-slate-200,
+[data-theme="dark"] .border-slate-300 { border-color: var(--color-border) !important; }
+[data-theme="dark"] .text-slate-950,
+[data-theme="dark"] .text-slate-900,
+[data-theme="dark"] .text-slate-800,
+[data-theme="dark"] .text-slate-700 { color: var(--color-text-primary) !important; }
+[data-theme="dark"] .text-slate-600,
+[data-theme="dark"] .text-slate-500 { color: var(--color-text-secondary) !important; }
+[data-theme="dark"] .text-slate-400,
+[data-theme="dark"] .text-slate-300 { color: var(--color-text-muted) !important; }
+[data-theme="dark"] .hover\:bg-slate-50:hover,
+[data-theme="dark"] .hover\:bg-slate-100:hover { background-color: var(--color-surface-elevated) !important; }
+[data-theme="dark"] .hover\:text-slate-900:hover,
+[data-theme="dark"] .hover\:text-slate-700:hover { color: var(--color-text-primary) !important; }
+[data-theme="dark"] .bg-emerald-50 { background-color: var(--color-primary-soft) !important; }
+[data-theme="dark"] .border-emerald-100,
+[data-theme="dark"] .border-emerald-200 { border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-border)) !important; }
+[data-theme="dark"] .text-emerald-600,
+[data-theme="dark"] .text-emerald-700,
+[data-theme="dark"] .text-emerald-800 { color: var(--color-primary) !important; }
+[data-theme="dark"] .bg-emerald-600 { background-color: var(--color-primary) !important; }
+[data-theme="dark"] .hover\:bg-emerald-700:hover { background-color: var(--color-primary-hover) !important; }
+[data-theme="dark"] .bg-red-50 { background-color: color-mix(in srgb, var(--color-danger) 10%, transparent) !important; }
+[data-theme="dark"] .border-red-100,
+[data-theme="dark"] .border-red-200 { border-color: color-mix(in srgb, var(--color-danger) 26%, var(--color-border)) !important; }
+[data-theme="dark"] .bg-amber-50 { background-color: color-mix(in srgb, var(--color-warning) 10%, transparent) !important; }
+[data-theme="dark"] .border-amber-100,
+[data-theme="dark"] .border-amber-200 { border-color: color-mix(in srgb, var(--color-warning) 26%, var(--color-border)) !important; }
+[data-theme="dark"] .shadow-sm,
+[data-theme="dark"] .shadow-xs,
+[data-theme="dark"] .shadow-2xs,
+[data-theme="dark"] .shadow-md,
+[data-theme="dark"] .shadow-lg,
+[data-theme="dark"] .shadow-xl { box-shadow: none !important; }
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea { color-scheme: dark; }
+[data-theme="dark"] .leaflet-control-zoom a,
+[data-theme="dark"] .leaflet-control-layers { background: var(--color-surface-elevated) !important; color: var(--color-text-primary) !important; border-color: var(--color-border) !important; }
+[data-theme="dark"] .leaflet-popup-content-wrapper,
+[data-theme="dark"] .leaflet-popup-tip { background: var(--color-surface-elevated); color: var(--color-text-primary); }
+
+/* Opt-in semantic helpers used by app shells and new components. */
+.gb-app { background: var(--color-background); color: var(--color-text-primary); }
+.gb-surface { background: var(--color-surface); border-color: var(--color-border); }
+.gb-surface-raised { background: var(--color-surface-elevated); border-color: var(--color-border); box-shadow: var(--shadow-card); }
+.gb-muted { color: var(--color-text-secondary); }
+.gb-primary { color: var(--color-primary); }
+[data-theme="dark"] .bg-emerald-100 { background-color: color-mix(in srgb, var(--color-primary) 16%, transparent) !important; }
+[data-theme="dark"] .ring-white { --tw-ring-color: var(--color-surface) !important; }
+[data-theme="dark"] .divide-slate-100 > :not(:last-child),
+[data-theme="dark"] .divide-slate-200 > :not(:last-child) { border-color: var(--color-border) !important; }
+
+[data-theme="dark"] main .bg-white { background-color: var(--color-surface-elevated) !important; }
+[data-theme="dark"] button.bg-emerald-600,
+[data-theme="dark"] a.bg-emerald-600 { color: #06120C !important; }
+[data-theme="dark"] button.hover\:bg-emerald-700:hover,
+[data-theme="dark"] a.hover\:bg-emerald-700:hover { color: #06120C !important; }

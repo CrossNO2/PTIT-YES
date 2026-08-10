@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin, Info } from "lucide-react";
+import { useTheme } from "@/components/theme/theme-provider";
 
 export interface MapPickupPoint {
   id: string;
@@ -19,6 +20,7 @@ interface CustomerMapProps {
 }
 
 export function CustomerMap({ pickups }: CustomerMapProps) {
+  const { theme } = useTheme();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<unknown>(null);
   const [selectedPickup, setSelectedPickup] = useState<MapPickupPoint | null>(null);
@@ -26,11 +28,11 @@ export function CustomerMap({ pickups }: CustomerMapProps) {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [mapError, setMapError] = useState("");
 
-  const filteredPickups = pickups.filter((p) => {
+  const filteredPickups = useMemo(() => pickups.filter((p) => {
     if (filterStatus === "active") return ["pending", "scheduled", "assigned", "collecting"].includes(p.status);
     if (filterStatus === "completed") return p.status === "completed";
     return true;
-  });
+  }), [pickups, filterStatus]);
 
   useEffect(() => {
     // Dynamically load Leaflet CSS and JS if not already loaded
@@ -88,10 +90,15 @@ export function CustomerMap({ pickups }: CustomerMapProps) {
       const map: any = L.map(mapContainerRef.current).setView([defaultLat, defaultLng], 12);
       mapInstanceRef.current = map;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map);
+      const dark = theme === "dark";
+      L.tileLayer(
+        dark ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+          attribution: dark ? '&copy; OpenStreetMap contributors &copy; CARTO' : '&copy; OpenStreetMap contributors',
+          maxZoom: 19,
+          subdomains: dark ? "abcd" : "abc",
+        }
+      ).addTo(map);
 
       const bounds: [number, number][] = [];
 
@@ -147,7 +154,7 @@ export function CustomerMap({ pickups }: CustomerMapProps) {
     };
 
     loadLeaflet();
-  }, [filteredPickups]);
+  }, [filteredPickups, theme]);
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-2xs space-y-4">

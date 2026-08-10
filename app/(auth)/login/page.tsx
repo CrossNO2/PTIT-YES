@@ -3,7 +3,9 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Leaf, ArrowRight, Lock, Mail, ShieldAlert, Loader2 } from "lucide-react";
+import { ArrowRight, Lock, Mail, ShieldAlert, Loader2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { createClient } from "@/lib/supabase/client";
 
 function LoginForm() {
@@ -61,10 +63,7 @@ function LoginForm() {
     <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl p-8 shadow-xs z-10 space-y-6">
       {/* Brand Header */}
       <div className="flex flex-col items-center text-center">
-        <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-2xs mb-3">
-          <Leaf className="w-6 h-6" />
-        </div>
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">GreenBridge AI</h1>
+        <BrandLogo />
         <p className="text-xs text-slate-500 mt-1">Nền tảng Tối Ưu Tuyến Đường & Thu Gom Bao Bì Enterprise</p>
       </div>
 
@@ -143,7 +142,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 relative text-slate-900">
+    <div className="gb-app min-h-screen flex flex-col justify-center items-center p-4 relative">
+      <div className="absolute top-5 right-5"><ThemeToggle /></div>
       <Suspense fallback={
         <div className="w-full max-w-md bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-500 text-xs">
           Đang tải...

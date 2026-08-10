@@ -32,7 +32,7 @@ export function MetricCard({
         <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{title}</span>
         <div
           className={`p-2 rounded-lg ${
-            accentColor === "green" ? "bg-[#DCFCE7] text-[#16A34A]" : "bg-slate-100 text-slate-600"
+            accentColor === "green" ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
           }`}
         >
           <Icon className="w-4 h-4" />
@@ -50,7 +50,7 @@ export function MetricCard({
             <span
               className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
                 trend.isPositive !== false
-                  ? "bg-[#DCFCE7] text-[#16A34A]"
+                  ? "bg-emerald-50 text-emerald-600"
                   : "bg-red-50 text-red-600"
               }`}
             >

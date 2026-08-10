@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Navigation, QrCode, History, LogOut, Leaf, Bell, Search } from "lucide-react";
+import { Navigation, QrCode, History, LogOut, Bell, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ToastViewport } from "@/components/ui/toast-viewport";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { BrandLogo } from "@/components/brand-logo";
 
 const navItems = [
   { name: "Tuyến Hôm Nay", href: "/shipper/today", icon: Navigation },
@@ -23,15 +25,9 @@ export default function ShipperLayout({ children }: { children: React.ReactNode 
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
+    <div className="gb-app min-h-screen flex">
       <aside className="hidden lg:flex w-60 shrink-0 border-r border-slate-200 bg-white h-screen sticky top-0 flex-col z-40">
-        <div className="h-16 px-6 border-b border-slate-100 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs"><Leaf className="w-5 h-5" /></div>
-          <div>
-            <div className="text-sm font-bold text-slate-900 leading-none">GreenBridge AI</div>
-            <div className="mt-1 text-[10px] uppercase tracking-wider font-semibold text-emerald-600">Shipper Workspace</div>
-          </div>
-        </div>
+        <div className="h-20 px-4 border-b border-slate-100 flex items-center"><BrandLogo /></div>
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -61,6 +57,7 @@ export default function ShipperLayout({ children }: { children: React.ReactNode 
             <span className="px-3 py-1 rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs font-medium">Workspace giao nhận</span>
           </div>
           <div className="flex items-center gap-3 ml-auto">
+            <ThemeToggle />
             <button aria-label="Thông báo" className="p-2 rounded-lg text-slate-500 hover:bg-slate-100"><Bell className="w-4 h-4" /></button>
             <div className="w-px h-5 bg-slate-200" />
             <div className="flex items-center gap-2">

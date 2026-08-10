@@ -24,7 +24,7 @@ export function StatusPill({ status, variant }: StatusPillProps) {
   }
 
   const styles = {
-    success: "bg-[#DCFCE7] text-[#16A34A] border-emerald-200",
+    success: "bg-emerald-50 text-emerald-600 border-emerald-200",
     warning: "bg-amber-50 text-amber-700 border-amber-200",
     danger: "bg-red-50 text-red-700 border-red-200",
     info: "bg-blue-50 text-blue-700 border-blue-200",

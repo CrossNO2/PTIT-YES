@@ -10,7 +10,6 @@ import {
   Ticket,
   History,
   LogOut,
-  Leaf,
   Menu,
   X,
   User,
@@ -19,6 +18,8 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { ToastViewport } from "@/components/ui/toast-viewport";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { BrandLogo } from "@/components/brand-logo";
 
 const navItems = [
   { name: "Tổng Quan Khách Hàng", href: "/customer/home", icon: Home },
@@ -40,21 +41,11 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
+    <div className="gb-app min-h-screen flex">
       {/* Desktop Sidebar (240px, white surface, right border) */}
       <aside className="hidden lg:flex flex-col w-60 border-r border-slate-200 bg-white shrink-0 sticky top-0 h-screen z-40">
         {/* Brand Header */}
-        <div className="flex items-center gap-3 px-6 h-16 border-b border-slate-100">
-          <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-2xs">
-            <Leaf className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="font-bold text-slate-900 text-sm tracking-tight leading-none">GreenBridge AI</h2>
-            <span className="text-[10px] font-semibold text-emerald-600 tracking-wider uppercase">
-              Customer Portal
-            </span>
-          </div>
-        </div>
+        <div className="flex items-center px-4 h-16 border-b border-slate-100"><BrandLogo /></div>
 
         {/* Role Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -109,13 +100,11 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
                 className="w-80 bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition"
               />
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-xs text-emerald-800 font-medium">
-              <Leaf className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Cổng Khách Hàng Xanh</span>
-            </div>
+            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-xs text-emerald-800 font-medium"><Recycle className="w-3.5 h-3.5 text-emerald-600" /><span>Cổng Khách Hàng Xanh</span></div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-3 text-xs">
+            <ThemeToggle />
             <button className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition relative">
               <Bell className="w-4 h-4" />
               <span className="w-2 h-2 bg-emerald-500 rounded-full absolute top-1.5 right-1.5 ring-2 ring-white"></span>
@@ -137,18 +126,13 @@ export default function CustomerLayout({ children }: { children: React.ReactNode
 
         {/* Mobile Header & Drawer */}
         <header className="lg:hidden flex items-center justify-between px-4 h-14 bg-white border-b border-slate-200">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
-              <Leaf className="w-4 h-4" />
-            </div>
-            <span className="font-bold text-slate-900 text-sm">GreenBridge Customer</span>
-          </div>
-          <button
+          <BrandLogo compact />
+          <div className="flex items-center gap-2"><ThemeToggle /><button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          </button></div>
         </header>
 
         {mobileOpen && (

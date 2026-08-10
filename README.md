@@ -36,6 +36,7 @@ The application provides separate workspaces for **Admin**, **Shipper**, and **C
 - Next.js 16 + React 19 + TypeScript
 - Supabase Auth, Postgres, RLS, RPC, and Storage
 - Tailwind CSS 4
+- Persistent light/dark enterprise theme with theme-aware Leaflet tiles
 - Leaflet + OpenStreetMap
 - Nominatim geocoding
 - OSRM routing/distance matrices

@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, Leaf, MapPinned, Recycle, ShieldCheck, Truck, CheckCircle2 } from "lucide-react";
+import { ArrowRight, BarChart3, MapPinned, Recycle, ShieldCheck, Truck, CheckCircle2 } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const features = [
   { icon: Truck, title: "Tối ưu tuyến VRP", text: "Tối ưu thứ tự giao nhận theo tải trọng, time window, ca shipper và 2-opt." },
@@ -10,14 +12,12 @@ const features = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900">
+    <div className="gb-app min-h-screen">
       <header className="border-b border-slate-200 bg-white/95 backdrop-blur sticky top-0 z-20">
         <div className="max-w-[1440px] mx-auto h-16 px-6 lg:px-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center"><Leaf className="w-5 h-5" /></div>
-            <div><div className="font-bold tracking-tight">GreenBridge AI</div><div className="text-[10px] uppercase tracking-wider font-semibold text-emerald-600">Green Logistics Platform</div></div>
-          </div>
+          <BrandLogo compact />
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Link href="/login" className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100">Đăng nhập</Link>
             <Link href="/register" className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold">Đăng ký khách hàng</Link>
           </div>
@@ -27,7 +27,7 @@ export default function LandingPage() {
       <main>
         <section className="max-w-[1440px] mx-auto px-6 lg:px-8 py-20 lg:py-28 grid grid-cols-1 xl:grid-cols-[1.05fr_.95fr] gap-12 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold"><Leaf className="w-3.5 h-3.5" /> Logistics xanh B2B / B2C</div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold"><Recycle className="w-3.5 h-3.5" /> Logistics xanh B2B / B2C</div>
             <h1 className="mt-6 text-5xl lg:text-6xl font-bold leading-[1.08] tracking-tight max-w-3xl">Tối ưu giao nhận và thu gom bao bì trong cùng một hệ thống.</h1>
             <p className="mt-6 text-lg leading-8 text-slate-600 max-w-2xl">GreenBridge kết nối điều phối tuyến, reverse logistics, Green Points, voucher và ESG analytics trên một workspace vận hành thống nhất.</p>
             <div className="mt-8 flex flex-wrap gap-3">
