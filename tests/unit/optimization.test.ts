@@ -9,7 +9,9 @@ vi.mock("@/lib/supabase/admin", () => ({
         in: () => ({
           in: () => ({
             eq: () => ({
-              eq: async () => ({ data: [], error: null }),
+              eq: () => ({
+                gt: async () => ({ data: [], error: null }),
+              }),
             }),
           }),
         }),
@@ -27,6 +29,8 @@ describe("Optimization Engine Unit Tests", () => {
     lat: 21.003118,
     lng: 105.814234,
     is_default: true,
+    has_cleaning_facility: true,
+    has_inspection_depot: true,
     status: "active",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -39,6 +43,7 @@ describe("Optimization Engine Unit Tests", () => {
     vehicle_type: "motorbike",
     license_plate: "29-A1 12345",
     capacity_kg: 50,
+    bag_capacity_units: 15,
     co2_kg_per_km: 0.085,
     fuel_cost_vnd_per_km: 1200,
     status: "active",

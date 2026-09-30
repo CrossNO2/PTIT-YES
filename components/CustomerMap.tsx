@@ -29,7 +29,7 @@ export function CustomerMap({ pickups }: CustomerMapProps) {
   const [mapError, setMapError] = useState("");
 
   const filteredPickups = useMemo(() => pickups.filter((p) => {
-    if (filterStatus === "active") return ["pending", "scheduled", "assigned", "collecting"].includes(p.status);
+    if (filterStatus === "active") return ["pending", "scheduled", "assigned", "collecting", "requested", "planned", "in_transit", "picked_up"].includes(p.status);
     if (filterStatus === "completed") return p.status === "completed";
     return true;
   }), [pickups, filterStatus]);
@@ -192,7 +192,7 @@ export function CustomerMap({ pickups }: CustomerMapProps) {
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            Đang xử lý ({pickups.filter((p) => ["pending", "scheduled", "assigned", "collecting"].includes(p.status)).length})
+            Đang xử lý ({pickups.filter((p) => ["pending", "scheduled", "assigned", "collecting", "requested", "planned", "in_transit", "picked_up"].includes(p.status)).length})
           </button>
           <button
             onClick={() => setFilterStatus("completed")}

@@ -18,6 +18,8 @@ import {
   ChevronRight,
   ShieldCheck,
   Zap,
+  PackageOpen,
+  RotateCcw,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -88,21 +90,31 @@ interface CustomerDashboardData {
 
 export default function CustomerHomePage() {
   const [data, setData] = useState<CustomerDashboardData | null>(null);
+  const [bags, setBags] = useState<any[]>([]);
+  const [loadingBags, setLoadingBags] = useState(true);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchDashboard = useCallback(async () => {
     try {
       setRefreshing(true);
-      const res = await fetch("/api/customer/dashboard");
-      const json = await res.json();
+      const [dashRes, bagsRes] = await Promise.all([
+        fetch("/api/customer/dashboard"),
+        fetch("/api/customer/bags"),
+      ]);
+      const json = await dashRes.json();
       if (json.success && json.data) {
         setData(json.data);
+      }
+      const bagsJson = await bagsRes.json();
+      if (bagsJson.success && bagsJson.data) {
+        setBags(bagsJson.data);
       }
     } catch {
       // Error handled gracefully
     } finally {
       setLoading(false);
+      setLoadingBags(false);
       setRefreshing(false);
     }
   }, []);
@@ -253,7 +265,7 @@ export default function CustomerHomePage() {
         <div className="p-4 bg-white border border-slate-200 rounded-xl shadow-2xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-              Bao Bì Tái Chế
+              Túi PaaS Đã Trả
             </span>
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
               <Leaf className="w-4 h-4" />
@@ -262,13 +274,109 @@ export default function CustomerHomePage() {
           <div>
             <div className="text-2xl font-bold text-emerald-600">
               {loading ? "..." : kpis?.total_packaging_kg || 0}{" "}
-              <span className="text-xs font-normal text-slate-500">kg</span>
+              <span className="text-xs font-normal text-slate-500">túi</span>
             </div>
             <p className="text-[11px] text-slate-500 mt-0.5">
               Giảm ~{kpis?.co2_saved_kg || 0} kg CO₂
             </p>
           </div>
         </div>
+      </div>
+
+      {/* SECTION 2.5 — PAAS BAGS IN CUSTODY */}
+      <div className="p-5 bg-white border border-slate-200 rounded-xl shadow-2xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <PackageOpen className="w-5 h-5 text-emerald-600" />
+            <h2 className="font-bold text-slate-900 text-sm sm:text-base">
+              Túi PaaS của bạn (PaaS Reusable Bags)
+            </h2>
+          </div>
+          <Link
+            href="/customer/pickups/new"
+            className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+          >
+            <span>Yêu cầu thu gom</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {loadingBags ? (
+          <div className="py-4 text-center text-xs text-slate-400">Đang tải túi PaaS...</div>
+        ) : bags.length === 0 ? (
+          <div className="py-6 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-slate-100">
+            Bạn hiện chưa giữ túi giao hàng PaaS nào. Túi tái sử dụng sẽ xuất hiện tại đây khi bạn nhận hàng từ các Shop đối tác của GreenBridge.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {bags.map((b) => (
+              <div
+                key={b.id}
+                className="p-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-emerald-300 transition space-y-2.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-slate-900 text-sm">
+                    {b.bag_code}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                      b.status === "with_customer"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : b.status === "return_requested"
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-blue-100 text-blue-800"
+                    }`}
+                  >
+                    {b.status === "with_customer"
+                      ? "Đang giữ túi"
+                      : b.status === "return_requested"
+                      ? "Đã hẹn thu gom"
+                      : b.status}
+                  </span>
+                </div>
+
+                <div className="text-xs text-slate-600 space-y-1">
+                  <div>
+                    Loại: <span className="font-medium text-slate-800">{b.model_type}</span>
+                  </div>
+                  <div>
+                    Số vòng tái sử dụng:{" "}
+                    <strong className="text-emerald-700">{b.usage_count} chu kỳ</strong>
+                  </div>
+                  {b.order && (
+                    <div>
+                      Đơn hàng:{" "}
+                      <span className="font-mono font-medium text-slate-800">
+                        #{b.order.order_code}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                  {b.can_request_recovery ? (
+                    <Link
+                      href={`/customer/pickups/new?bag_id=${b.id}`}
+                      className="w-full py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs text-center transition flex items-center justify-center gap-1.5"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Yêu cầu thu gom</span>
+                    </Link>
+                  ) : b.active_recovery ? (
+                    <Link
+                      href={`/customer/pickups/${b.active_recovery.id}`}
+                      className="w-full py-1.5 px-3 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold text-xs text-center transition"
+                    >
+                      Xem tiến trình thu gom
+                    </Link>
+                  ) : (
+                    <span className="text-[11px] text-slate-400">Đang được xử lý</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* SECTION 3 & 4 — MAIN MAP AREA & RIGHT-SIDE SUMMARY PANEL */}
@@ -329,7 +437,7 @@ export default function CustomerHomePage() {
                 </p>
                 <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-emerald-100">
                   <span>Ngày hẹn: <b>{activePickupsList[0].pickup_date || "Đang xếp lịch"}</b></span>
-                  <span>{activePickupsList[0].quantity_kg || 0} kg</span>
+                  <span>{activePickupsList[0].quantity_kg || 1} túi</span>
                 </div>
               </div>
             ) : (
@@ -497,7 +605,7 @@ export default function CustomerHomePage() {
                         {p.pickup_date || (p.created_at ? p.created_at.split("T")[0] : "-")}
                       </td>
                       <td className="py-2.5 px-3 text-slate-800 font-mono">
-                        {p.verified_quantity_kg || p.estimated_quantity_kg || 0} kg
+                        {p.verified_quantity_kg || p.estimated_quantity_kg || 1} túi
                       </td>
                       <td className="py-2.5 px-3">
                         <span
@@ -584,13 +692,13 @@ export default function CustomerHomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-1">
           <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
-            <span className="text-slate-500 text-[11px]">Bao bì đã xác nhận thu gom</span>
-            <div className="text-2xl font-bold text-slate-900 mt-1">{sustainability?.packaging_collected_kg || 0} <span className="text-xs font-normal text-slate-400">kg</span></div>
+            <span className="text-slate-500 text-[11px]">Bao bì PaaS đã hoàn trả</span>
+            <div className="text-2xl font-bold text-slate-900 mt-1">{sustainability?.packaging_collected_kg || 0} <span className="text-xs font-normal text-slate-400">túi</span></div>
           </div>
           <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
             <span className="text-slate-500 text-[11px]">CO₂ tránh phát thải (ước tính)</span>
             <div className="text-2xl font-bold text-emerald-600 mt-1">{sustainability?.co2_saved_kg || 0} <span className="text-xs font-normal text-slate-400">kg CO₂e</span></div>
-            <div className="mt-1 text-[10px] text-slate-400">Hệ số minh họa: 1,5 kg CO₂e / kg bao bì tái chế. Có thể thay bằng methodology chính thức sau.</div>
+            <div className="mt-1 text-[10px] text-slate-400">Hệ số minh họa: 1,5 kg CO₂e / túi bao bì tái sử dụng. Có thể thay bằng methodology chính thức sau.</div>
           </div>
           <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
             <span className="text-slate-500 text-[11px]">Green Points đã tích lũy</span>

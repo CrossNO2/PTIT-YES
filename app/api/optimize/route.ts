@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireShopMembership } from "@/lib/auth/require-user";
 import { runOptimizationEngine } from "@/lib/optimization/greedy-vrp";
-import { insertPickupsIntoRoute } from "@/lib/optimization/reverse-logistics";
+import { insertPickupsIntoRoute, insertRecoveryRequestsIntoRoute } from "@/lib/optimization/reverse-logistics";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { formatErrorResponse, jsonError } from "@/lib/errors";
 import { z } from "zod";
@@ -37,17 +37,53 @@ export async function POST(request: NextRequest) {
     const { data: vehicles, error: vehError } = await supabase.from("vehicles").select("*").eq("shop_id", shop_id).eq("status", "active");
     if (vehError || !vehicles?.length) return jsonError("Shop chưa có phương tiện active", "NO_ACTIVE_VEHICLES", 400);
 
-    const { data: pickups, error: pickupError } = await supabase.from("packaging_pickups").select("*").eq("shop_id", shop_id).eq("pickup_date", delivery_date).eq("status", "pending").is("assigned_route_id", null);
-    if (pickupError) throw pickupError;
+    // Fetch v2 PaaS recovery requests (Strategy A candidates)
+    const { data: recoveries, error: recoveryError } = await supabase
+      .from("recovery_requests")
+      .select("*")
+      .eq("shop_id", shop_id)
+      .eq("pickup_date", delivery_date)
+      .in("status", ["requested", "planned"])
+      .is("assigned_route_id", null);
+    if (recoveryError) throw recoveryError;
+
+    // Optional legacy pickups
+    const { data: legacyPickups } = await supabase
+      .from("packaging_pickups")
+      .select("*")
+      .eq("shop_id", shop_id)
+      .eq("pickup_date", delivery_date)
+      .eq("status", "pending")
+      .is("assigned_route_id", null);
 
     const result = await runOptimizationEngine(warehouse, orders, vehicles);
-    let remainingPickups = [...(pickups ?? [])];
+    let remainingRecoveries = [...(recoveries ?? [])];
+    let remainingPickups = [...(legacyPickups ?? [])];
+
     result.routes = result.routes.map((route) => {
-      const vehicle = vehicles.find(v => v.id === route.vehicleId);
-      if (!vehicle || remainingPickups.length === 0) return route;
-      const inserted = insertPickupsIntoRoute(route, remainingPickups, vehicle);
-      remainingPickups = remainingPickups.filter(p => !inserted.insertedPickups.includes(p.id));
-      return inserted.updatedRoute;
+      const vehicle = vehicles.find((v) => v.id === route.vehicleId);
+      if (!vehicle) return route;
+
+      let currentRoute = route;
+      // 1. Insert v2 PaaS Recovery Requests
+      if (remainingRecoveries.length > 0) {
+        const insertedRecovery = insertRecoveryRequestsIntoRoute(currentRoute, remainingRecoveries, vehicle);
+        remainingRecoveries = remainingRecoveries.filter(
+          (r) => !insertedRecovery.insertedRecoveryRequestIds.includes(r.id)
+        );
+        currentRoute = insertedRecovery.updatedRoute;
+      }
+
+      // 2. Insert legacy pickups if present
+      if (remainingPickups.length > 0) {
+        const insertedPickups = insertPickupsIntoRoute(currentRoute, remainingPickups, vehicle);
+        remainingPickups = remainingPickups.filter(
+          (p) => !insertedPickups.insertedPickups.includes(p.id)
+        );
+        currentRoute = insertedPickups.updatedRoute;
+      }
+
+      return currentRoute;
     });
 
     result.optimizedDistanceKm = Number(result.routes.reduce((sum, route) => sum + route.totalDistanceKm, 0).toFixed(2));
@@ -56,7 +92,21 @@ export async function POST(request: NextRequest) {
     result.estimatedCo2SavedKg = Number((result.totalKmSaved * Number(representative?.co2_kg_per_km ?? 0)).toFixed(4));
     result.estimatedCostSavedVnd = Number((result.totalKmSaved * Number(representative?.fuel_cost_vnd_per_km ?? 0)).toFixed(2));
 
-    return NextResponse.json({ success: true, data: { ...result, reverseLogistics: { inserted: (pickups?.length ?? 0) - remainingPickups.length, pendingNotInserted: remainingPickups.length } } });
+    const totalReverseCandidates = (recoveries?.length ?? 0) + (legacyPickups?.length ?? 0);
+    const totalRemaining = remainingRecoveries.length + remainingPickups.length;
+    const totalInserted = totalReverseCandidates - totalRemaining;
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...result,
+        reverseLogistics: {
+          inserted: totalInserted,
+          pendingNotInserted: totalRemaining,
+          paasRecoveriesInserted: (recoveries?.length ?? 0) - remainingRecoveries.length,
+        },
+      },
+    });
   } catch (error: unknown) {
     const { status, body } = formatErrorResponse(error);
     return NextResponse.json(body, { status });

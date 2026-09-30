@@ -32,10 +32,12 @@ export type OptimizationRejection = {
 };
 
 export type OptimizedStop = {
-  stopType: "warehouse" | "delivery" | "pickup";
+  stopType: "warehouse" | "delivery" | "pickup" | "recovery";
   orderId?: string;
   pickupId?: string;
+  recoveryRequestId?: string;
   orderCode?: string;
+  bagCode?: string;
   address: string;
   lat: number;
   lng: number;
@@ -44,6 +46,7 @@ export type OptimizedStop = {
   distanceFromPreviousKm: number;
   durationFromPreviousMins: number;
   weightKg: number;
+  bagUnits?: number;
   timeSlotStart: string;
   timeSlotEnd: string;
 };

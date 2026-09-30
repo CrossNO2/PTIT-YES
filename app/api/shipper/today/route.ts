@@ -56,11 +56,56 @@ export async function GET() {
       throw ordersError;
     }
 
-    const { data: pickups, error: pickupsError } = await supabase
-      .from("packaging_pickups")
-      .select("id,address,lat,lng,packaging_type,estimated_quantity_kg,verified_quantity_kg,status,assigned_route_id")
+    // 4. Fetch Assigned Recovery Requests for this route (PaaS bags)
+    const { data: recoveryRequests } = await supabase
+      .from("recovery_requests")
+      .select(`
+        id,
+        bag_id,
+        order_id,
+        status,
+        recovery_strategy,
+        pickup_address,
+        lat,
+        lng,
+        pickup_date,
+        time_slot_start,
+        time_slot_end,
+        assigned_route_id,
+        paas_bags (
+          id,
+          bag_code,
+          qr_code_hash,
+          model_type,
+          status
+        ),
+        profiles:customer_id (
+          name,
+          phone
+        )
+      `)
       .eq("assigned_route_id", route.id);
-    if (pickupsError) throw pickupsError;
+
+    const recoveries = (recoveryRequests || []).map((r: any) => ({
+      id: r.id,
+      recovery_request_id: r.id,
+      bag_id: r.bag_id,
+      bag_code: r.paas_bags?.bag_code || "PaaS Bag",
+      qr_code_hash: r.paas_bags?.qr_code_hash || "",
+      address: r.pickup_address,
+      lat: Number(r.lat),
+      lng: Number(r.lng),
+      pickup_date: r.pickup_date,
+      time_slot: `${(r.time_slot_start || "08:00").slice(0, 5)} - ${(r.time_slot_end || "18:00").slice(0, 5)}`,
+      status: r.status,
+      recovery_strategy: r.recovery_strategy,
+      customer_name: r.profiles?.name || "Khách hàng",
+      customer_phone_masked: r.profiles?.phone ? r.profiles.phone.replace(/(\d{3})\d{4}(\d{3})/, "$1****$2") : "090****000",
+      assigned_route_id: r.assigned_route_id,
+      // Compatibility fields for map and existing components
+      packaging_type: r.paas_bags?.bag_code ? `Túi PaaS (${r.paas_bags.bag_code})` : "Túi PaaS GreenBridge",
+      bagUnits: 1,
+    }));
 
     return NextResponse.json({
       success: true,
@@ -68,7 +113,8 @@ export async function GET() {
         route,
         stops: stops || [],
         orders: (ordersData || []).filter((order: { assigned_route_id?: string | null }) => order.assigned_route_id === route.id),
-        pickups: pickups || [],
+        recoveries,
+        pickups: recoveries, // Compatibility alias
       },
     });
   } catch (error: unknown) {

@@ -25,22 +25,96 @@ export async function GET() {
       .filter((t) => (t.points_delta || 0) > 0)
       .reduce((acc, t) => acc + (t.points_delta || 0), 0);
 
-    // 2. Fetch packaging pickups for user
-    const { data: pickups, error: pickupError } = await supabase
+    // 2. Fetch v2 recovery requests & bags for user (PaaS Architecture)
+    const { data: recoveries, error: recoveryError } = await supabase
+      .from("recovery_requests")
+      .select(`
+        id,
+        shop_id,
+        customer_id,
+        bag_id,
+        order_id,
+        status,
+        recovery_strategy,
+        pickup_address,
+        lat,
+        lng,
+        pickup_date,
+        time_slot_start,
+        time_slot_end,
+        assigned_route_id,
+        assigned_shipper_id,
+        picked_up_at,
+        completed_at,
+        created_at,
+        paas_bags (
+          id,
+          bag_code,
+          model_type,
+          usage_count,
+          status
+        )
+      `)
+      .eq("customer_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (recoveryError) {
+      throw recoveryError;
+    }
+
+    // Optional legacy fallback for backwards compatibility
+    const { data: legacyPickups } = await supabase
       .from("packaging_pickups")
       .select("*")
       .eq("customer_id", user.id)
       .order("created_at", { ascending: false });
 
-    if (pickupError) {
-      throw pickupError;
-    }
+    // Fetch user's active PaaS bags in custody
+    const { data: bagsInCustody } = await supabase
+      .from("paas_bags")
+      .select("id, bag_code, status, usage_count")
+      .eq("current_holder_user_id", user.id);
+    const totalBagsInCustody = (bagsInCustody || []).length;
 
-    const allPickups = pickups || [];
+    const recoveryMapped = (recoveries || []).map((r) => {
+      const bag = Array.isArray(r.paas_bags) ? r.paas_bags[0] : (r.paas_bags as { bag_code?: string } | null);
+      const bagLabel = bag?.bag_code ? `Túi PaaS (${bag.bag_code})` : "Túi PaaS Reusable";
+      return {
+        id: r.id,
+        address: r.pickup_address,
+        lat: Number(r.lat),
+        lng: Number(r.lng),
+        status: r.status,
+        packaging_type: bagLabel,
+        quantity_kg: 1,
+        estimated_quantity_kg: 1,
+        verified_quantity_kg: r.status === "completed" ? 1 : 0,
+        pickup_date: r.pickup_date,
+        created_at: r.created_at,
+        is_paas: true,
+      };
+    });
+
+    const legacyMapped = (legacyPickups || []).map((p) => ({
+      id: p.id,
+      address: p.address,
+      lat: Number(p.lat),
+      lng: Number(p.lng),
+      status: p.status,
+      packaging_type: p.packaging_type,
+      quantity_kg: Number(p.verified_quantity_kg || p.estimated_quantity_kg || 0),
+      estimated_quantity_kg: Number(p.estimated_quantity_kg || 0),
+      verified_quantity_kg: p.verified_quantity_kg ? Number(p.verified_quantity_kg) : 0,
+      pickup_date: p.pickup_date,
+      created_at: p.created_at,
+      is_paas: false,
+    }));
+
+    const allPickups = [...recoveryMapped, ...legacyMapped];
     const totalPickupsCount = allPickups.length;
     const completedPickups = allPickups.filter((p) => p.status === "completed");
     const activePickups = allPickups.filter((p) =>
-      ["pending", "scheduled", "assigned", "collecting"].includes(p.status)
+      ["pending", "scheduled", "assigned", "collecting", "requested", "planned", "in_transit", "picked_up"].includes(p.status)
     );
     const completedCount = completedPickups.length;
     const activeCount = activePickups.length;
@@ -136,6 +210,7 @@ export async function GET() {
           active_vouchers: activeVouchersCount,
           total_packaging_kg: Number(totalPackagingKg.toFixed(1)),
           co2_saved_kg: co2SavedKg,
+          bags_in_custody: totalBagsInCustody,
         },
         map_pickups: allPickups.map((p) => ({
           id: p.id,
