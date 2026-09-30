@@ -87,8 +87,7 @@ export async function GET(request: NextRequest) {
           vehicles (
             id,
             name,
-            license_plate,
-            bag_capacity_units
+            license_plate
           )
         ),
         shops:shop_id (

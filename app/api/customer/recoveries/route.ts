@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
         .select(`
           *,
           stops:route_stops (id, sequence_index, lat, lng, stop_type),
-          vehicles (id, bag_capacity_units, capacity_kg, fuel_cost_vnd_per_km)
+          vehicles (id, capacity_kg, fuel_cost_vnd_per_km)
         `)
         .eq("shop_id", shopId)
         .eq("route_date", activeRecovery.pickup_date)
@@ -380,7 +380,6 @@ export async function POST(request: NextRequest) {
         ),
         vehicles (
           id,
-          bag_capacity_units,
           capacity_kg,
           fuel_cost_vnd_per_km
         )

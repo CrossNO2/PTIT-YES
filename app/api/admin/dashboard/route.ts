@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
           shipper_id,
           created_at,
           warehouses (name, address, lat, lng),
-          vehicles (name, license_plate, bag_capacity_units),
+          vehicles (name, license_plate),
           profiles:shipper_id (name, phone)
         `)
         .eq("shop_id", shopId)
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         .limit(50),
 
       // Vehicles
-      supabase.from("vehicles").select("id, name, status, bag_capacity_units").eq("shop_id", shopId),
+      supabase.from("vehicles").select("id, name, status").eq("shop_id", shopId),
 
       // Shippers
       supabase.from("shop_members").select("id, user_id, status").eq("shop_id", shopId).eq("member_role", "shipper"),

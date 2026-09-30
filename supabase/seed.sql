@@ -82,8 +82,8 @@ BEGIN
   -- Upsert Fleet / Vehicles
   SELECT id INTO v_vehicle1_id FROM public.vehicles WHERE shop_id = v_shop_id LIMIT 1;
   IF v_vehicle1_id IS NULL THEN
-    INSERT INTO public.vehicles (id, shop_id, name, vehicle_type, license_plate, capacity_kg, bag_capacity_units, co2_kg_per_km, fuel_cost_vnd_per_km, status)
-    VALUES ('44444444-4444-4444-4444-444444444441', v_shop_id, 'Xe Máy Điện Green E1', 'electric_motorbike', '29-MD1 088.99', 45.0, 18, 0.0150, 450.00, 'active')
+    INSERT INTO public.vehicles (id, shop_id, name, vehicle_type, license_plate, capacity_kg, co2_kg_per_km, fuel_cost_vnd_per_km, status)
+    VALUES ('44444444-4444-4444-4444-444444444441', v_shop_id, 'Xe Máy Điện Green E1', 'electric_motorbike', '29-MD1 088.99', 45.0, 0.0150, 450.00, 'active')
     RETURNING id INTO v_vehicle1_id;
   ELSE
     UPDATE public.vehicles SET status = 'active' WHERE id = v_vehicle1_id;

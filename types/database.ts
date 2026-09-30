@@ -173,7 +173,7 @@ export interface Vehicle {
   vehicle_type: VehicleType;
   license_plate: string;
   capacity_kg: number;
-  bag_capacity_units: number;
+  bag_capacity_units?: number; // Optional in-memory/domain optimization parameter (not a live DB column)
   co2_kg_per_km: number;
   fuel_cost_vnd_per_km: number;
   status: 'active' | 'maintenance' | 'inactive';
